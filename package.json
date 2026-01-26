@@ -1,0 +1,25 @@
+{
+  "name": "notanda2-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:backend": "npm --workspace apps/backend run dev",
+    "dev:frontend": "npm --workspace apps/frontend run dev",
+    "build:backend": "npm --workspace apps/backend run build",
+    "build:frontend": "npm --workspace apps/frontend run build",
+    "build:all": "npm run build:backend && npm run build:frontend",
+    "start:backend": "npm --workspace apps/backend run start",
+    "start:frontend": "npm --workspace apps/frontend run preview",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up",
+    "docker:up:prod": "docker-compose up --build -d",
+    "docker:down": "docker-compose down",
+    "db:inspect": "sqlite3 apps/backend/db.sqlite",
+    "db:dev:inspect": "sqlite3 apps/backend/dev-db.sqlite",
+    "db:dev:seed": "npm --workspace apps/backend run db:dev:seed",
+    "db:dev:clear": "npm --workspace apps/backend run db:dev:clear"
+  }
+}
