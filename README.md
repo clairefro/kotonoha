@@ -1,11 +1,15 @@
-# notanda2 Monorepo
+# App Description
+
+Shared library platform designed for a small group of users to collaboratively collect, annotate, and comment on books, poems and articles. Users can add new items to the library, share notes and comments, and organize resources
+
+# Kotonoha
+
+## Getting Started
 
 - Backend: Node.js, TypeScript, Express, Sqlite (with option to use Turso DaaS)
 - Frontend: React, TypeScript, Vite
 - Shared: TypeScript types
 - Orchestrated with Docker Compose
-
-## Getting Started
 
 ### Development
 
