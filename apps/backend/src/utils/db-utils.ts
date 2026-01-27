@@ -1,0 +1,63 @@
+import { createClient } from "@libsql/client";
+
+export async function ensureDbSchema(
+  db: ReturnType<typeof createClient>,
+  schema: string,
+) {
+  // Remove block comments (/* ... */)
+  schema = schema.replace(/\/\*[\s\S]*?\*\//g, "");
+  // Remove line comments (lines starting with --)
+  schema = schema.replace(/^\s*--.*$/gm, "");
+  // Remove inline comments ( -- ... )
+  schema = schema.replace(/--[^\n]*/g, "");
+
+  // Group lines into full SQL statements
+  const statements: string[] = [];
+  let lines = schema.split(/\r?\n/);
+  let buffer: string[] = [];
+  let inTrigger = false;
+  let inTable = false;
+  for (let line of lines) {
+    if (!inTrigger && /CREATE\s+TRIGGER/i.test(line)) {
+      inTrigger = true;
+      buffer.push(line);
+      continue;
+    }
+    if (inTrigger) {
+      buffer.push(line);
+      if (/END\s*;?/i.test(line)) {
+        statements.push(buffer.join("\n"));
+        buffer = [];
+        inTrigger = false;
+      }
+      continue;
+    }
+    if (!inTable && /CREATE\s+TABLE/i.test(line)) {
+      inTable = true;
+      buffer.push(line);
+      continue;
+    }
+    if (inTable) {
+      buffer.push(line);
+      if (/^\)\s*;?\s*$/.test(line)) {
+        statements.push(buffer.join("\n"));
+        buffer = [];
+        inTable = false;
+      }
+      continue;
+    }
+    // For other lines, split on semicolons
+    let parts = line.split(";");
+    for (let part of parts) {
+      if (part.trim()) {
+        statements.push(part.trim());
+      }
+    }
+  }
+
+  for (const stmt of statements) {
+    // Skip lone END
+    if (stmt.toUpperCase() === "END") continue;
+    await db.execute(stmt);
+  }
+}

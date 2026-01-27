@@ -1,9 +1,9 @@
 import express from "express";
-import { readTextFile } from "./util";
+import { ensureDbSchema } from "./utils/db-utils";
 import { createClient } from "@libsql/client";
-import { ExampleType } from "shared-types";
 
 import { LOCAL_DEV_DB_PATH, LOCAL_PROD_DB_PATH } from "../constants";
+import { readTextFile } from "./util";
 
 // Determine environment
 const isDev = process.env.NODE_ENV !== "production";
@@ -24,45 +24,25 @@ const db = createClient({
   // TODO: add encryptionKey prop
 });
 
-// Ensure schema from schema.sql
-async function ensureDbSchema() {
-  const schema = readTextFile("./db-schema.sql", __dirname);
-  // Split on semicolons to support multiple statements
-  for (const stmt of schema.split(/;\s*\n/)) {
-    if (stmt.trim()) {
-      await db.execute(stmt);
-    }
-  }
-}
-ensureDbSchema();
+// Ensure schema from db-schema.sql
+const dbSchema = readTextFile("./db-schema.sql", __dirname);
+ensureDbSchema(db, dbSchema);
 
 app.use(express.json());
 
-app.get("/api/examples", async (req, res) => {
+// Items API
+app.get("/api/items", async (req, res) => {
   try {
-    const result = await db.execute("SELECT * FROM example");
-    // Map each row to ExampleType to ensure correct typing
-    const examples: ExampleType[] = (result.rows as any[]).map((row) => ({
+    const result = await db.execute("SELECT * FROM items");
+    const items = (result.rows as any[]).map((row) => ({
       id: row.id,
-      name: row.name,
+      title: row.title,
+      source_url: row.source_url,
+      item_type: row.item_type,
+      added_by: row.added_by,
+      created_at: row.created_at,
     }));
-    res.json(examples);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post("/api/examples", async (req, res) => {
-  const { id, name } = req.body;
-  if (!id || !name) {
-    return res.status(400).json({ error: "Missing id or name" });
-  }
-  try {
-    await db.execute("INSERT INTO example (id, name) VALUES (?, ?)", [
-      id,
-      name,
-    ]);
-    res.status(201).json({ id, name });
+    res.json(items);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

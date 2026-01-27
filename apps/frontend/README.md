@@ -12,4 +12,3 @@
 # Usage
 
 - Open http://localhost:3000 to view the app.
-- The app fetches example data from the backend API.
