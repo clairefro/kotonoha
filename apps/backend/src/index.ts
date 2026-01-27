@@ -1,6 +1,6 @@
 import "express-session";
 import express from "express";
-import session from "express-session";
+import { getSessionMiddleware } from "./middleware/session";
 import { ensureDbSchema } from "./utils/db-utils";
 import { createClient } from "@libsql/client";
 import { LOCAL_DEV_DB_PATH, LOCAL_PROD_DB_PATH } from "../constants";
@@ -33,18 +33,7 @@ ensureDbSchema(db, dbSchema);
 app.use(express.json());
 
 // Session middleware (in-memory store for demo; use Redis in prod)
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "dev_secret", // set env var in prod
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-    },
-  }),
-);
+app.use(getSessionMiddleware());
 
 // Register API routes
 app.use("/api", createApiRouter(db));
