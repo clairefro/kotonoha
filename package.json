@@ -23,6 +23,7 @@
     "db:dev:clear": "npm --workspace apps/backend run db:dev:clear"
   },
   "dependencies": {
-    "nanoid": "^5.1.6"
+    "nanoid": "^5.1.6",
+    "react-router-dom": "^7.13.0"
   }
 }
