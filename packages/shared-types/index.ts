@@ -28,7 +28,7 @@ export interface Item {
   id: ItemId;
   title: string;
   source_url?: string | null;
-  item_type: "book" | "pdf" | "article";
+  item_type: "book" | "article" | "essay" | "poem" | "other";
   added_by: UserId;
   created_at: string;
 }
