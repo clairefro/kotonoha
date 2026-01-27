@@ -15,12 +15,15 @@ const OnboardAdmin: React.FC = () => {
       <h2>Welcome! Set up your first admin account</h2>
       <div className="onboard-admin-note">
         <span>Important:</span> This account will be the only admin to start
-        with. Please remember your password—there is no password reset!
+        with. Please remember your password—there is no password reset for
+        logged out admins!
       </div>
       <SignupForm />
     </div>
   );
 };
+
+import { useAuth } from "../contexts/AuthContext";
 
 function SignupForm() {
   const [username, setUsername] = React.useState("");
@@ -30,12 +33,13 @@ function SignupForm() {
   const [success, setSuccess] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   React.useEffect(() => {
     if (success) {
       const timeout = setTimeout(() => {
         navigate("/");
-      }, 2000);
+      }, 1000);
       return () => clearTimeout(timeout);
     }
   }, [success, navigate]);
@@ -66,6 +70,9 @@ function SignupForm() {
         setLoading(false);
         return;
       }
+      const data = await res.json();
+      // Automatically log in the new admin
+      login({ id: data.id, username: data.username });
       setSuccess(true);
       setUsername("");
       setPassword("");
@@ -123,9 +130,7 @@ function SignupForm() {
       </div>
       {error && <div className="form-error">{error}</div>}
       {success && (
-        <div className="form-success">
-          Admin account created! You can now log in.
-        </div>
+        <div className="form-success">Admin account created! Logging in...</div>
       )}
       <button type="submit" disabled={loading} className="form-button">
         {loading ? "Creating..." : "Create Admin Account"}

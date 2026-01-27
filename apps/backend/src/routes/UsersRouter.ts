@@ -44,18 +44,32 @@ export class UsersRouter extends BaseRouter {
         const countResult = await this.db.execute(
           "SELECT COUNT(*) as count FROM users",
         );
-        const userCount = Number(countResult.rows[0]?.count || 0);
+        let userCount = Number(countResult.rows[0]?.count) || 0;
         let is_admin = 0;
         if (userCount === 0) {
           // First user: always admin
           is_admin = 1;
+          // Double-check right before insert to avoid race condition
+          const doubleCheck = await this.db.execute(
+            "SELECT COUNT(*) as count FROM users",
+          );
+          userCount = Number(doubleCheck.rows[0]?.count || 0);
+          if (userCount !== 0) {
+            return res.status(409).json({
+              error:
+                "Too late! An admin already exists. Only admins can create new users",
+            });
+          }
         } else {
           // Only admins can create users
           const sessionUser = req.session?.user;
           if (!sessionUser) {
             return res
               .status(403)
-              .json({ error: "Only admins can create users" });
+              .json({
+                error:
+                  "Only admins can create users. If you are seeing this in the admin onboarding, it means someone else already created an admin",
+              });
           }
           // Fetch user from DB to check is_admin
           const adminCheck = await this.db.execute(
