@@ -21,5 +21,8 @@
     "db:dev:inspect": "sqlite3 apps/backend/dev-db.sqlite",
     "db:dev:seed": "npm --workspace apps/backend run db:dev:seed",
     "db:dev:clear": "npm --workspace apps/backend run db:dev:clear"
+  },
+  "dependencies": {
+    "nanoid": "^5.1.6"
   }
 }

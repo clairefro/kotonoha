@@ -1,6 +1,7 @@
 import express from "express";
 import { ensureDbSchema } from "./utils/db-utils";
 import { createClient } from "@libsql/client";
+import { createId } from "./utils/db-utils";
 
 import { LOCAL_DEV_DB_PATH, LOCAL_PROD_DB_PATH } from "../constants";
 import { readTextFile } from "./util";
@@ -43,6 +44,28 @@ app.get("/api/items", async (req, res) => {
       created_at: row.created_at,
     }));
     res.json(items);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/items", async (req, res) => {
+  const {
+    title,
+    source_url,
+    item_type = "article",
+    added_by = "u_admin_1",
+  } = req.body;
+  if (!title) {
+    return res.status(400).json({ error: "Missing title" });
+  }
+  const id = createId.item();
+  try {
+    await db.execute(
+      `INSERT INTO items (id, title, source_url, item_type, added_by) VALUES (?, ?, ?, ?, ?)`,
+      [id, title, source_url || null, item_type, added_by],
+    );
+    res.status(201).json({ id, title, source_url, item_type, added_by });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

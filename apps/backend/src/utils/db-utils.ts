@@ -1,5 +1,9 @@
 import { createClient } from "@libsql/client";
+import { nanoid } from "nanoid";
 
+import { ItemId, HumanId, TagId, CommentId, ActivityId } from "shared-types";
+
+/** SCHEMA ENFORCEMENT */
 export async function ensureDbSchema(
   db: ReturnType<typeof createClient>,
   schema: string,
@@ -61,3 +65,17 @@ export async function ensureDbSchema(
     await db.execute(stmt);
   }
 }
+
+/** DB ENTITY UTILS */
+
+const newNanoId = () => {
+  return nanoid(14);
+};
+
+export const createId = {
+  item: () => `i_${newNanoId()}` as ItemId,
+  human: () => `h_${newNanoId()}` as HumanId,
+  topic: () => `t_${newNanoId()}` as TagId,
+  comment: () => `c_${newNanoId()}` as CommentId,
+  activity: () => `a_${newNanoId()}` as ActivityId,
+};
