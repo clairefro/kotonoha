@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .then(async (res) => {
         if (res.ok) {
           const data = await res.json();
-          setUser(data.user);
+          setUser(data);
         }
       })
       .finally(() => setLoading(false));

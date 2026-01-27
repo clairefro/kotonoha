@@ -51,17 +51,10 @@ export interface ErrorResponse {
   error: string;
 }
 
-export interface SessionUserResponse {
-  user: SessionUser;
+export interface UsersEmptyResponse {
+  empty: boolean;
 }
 
-export interface ItemsResponse {
-  items: Item[];
-}
-
-export interface ItemResponse {
-  item: Item;
-}
 /**
  * ACTIVITY & NOTIFICATIONS
  */

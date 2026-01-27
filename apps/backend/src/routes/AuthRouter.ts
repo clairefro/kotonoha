@@ -2,12 +2,7 @@
 
 import { verifyPassword } from "../utils/db-utils";
 import { BaseRouter } from "./_BaseRouter";
-import {
-  User,
-  SessionUserResponse,
-  SessionUser,
-  OkResponse,
-} from "shared-types";
+import { User, SessionUser, OkResponse } from "shared-types";
 import { Response } from "express";
 
 interface UserRaw extends User {
@@ -23,7 +18,7 @@ export class AuthRoute extends BaseRouter {
     // POST /api/auth/login
     this.router.post(
       "/login",
-      async (req, res: Response<SessionUserResponse>, next) => {
+      async (req, res: Response<SessionUser>, next) => {
         const { username, password } = req.body;
         if (!username || !password) {
           return next({ status: 400, message: "Missing username or password" });
@@ -49,7 +44,7 @@ export class AuthRoute extends BaseRouter {
             username: user.username,
           };
           req.session.user = sessionUser;
-          res.json({ user: sessionUser });
+          res.json(sessionUser);
         } catch (err) {
           next(err);
         }
@@ -57,20 +52,17 @@ export class AuthRoute extends BaseRouter {
     );
 
     // GET /api/auth/session
-    this.router.get(
-      "/session",
-      (req, res: Response<SessionUserResponse>, next) => {
-        try {
-          if (req.session.user) {
-            res.json({ user: req.session.user });
-          } else {
-            next({ status: 401, message: "Not authenticated" });
-          }
-        } catch (err) {
-          next(err);
+    this.router.get("/session", (req, res: Response<SessionUser>, next) => {
+      try {
+        if (req.session.user) {
+          res.json(req.session.user);
+        } else {
+          next({ status: 401, message: "Not authenticated" });
         }
-      },
-    );
+      } catch (err) {
+        next(err);
+      }
+    });
 
     // POST /api/auth/logout
     this.router.post("/logout", (req, res: Response<OkResponse>, next) => {

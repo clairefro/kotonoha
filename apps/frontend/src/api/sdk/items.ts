@@ -1,19 +1,12 @@
 import { apiFetch } from "../api";
-import type {
-  Item,
-  ItemId,
-  ItemResponse,
-  ItemsResponse,
-} from "../../../../../packages/shared-types";
+import type { Item, ItemId } from "../../../../../packages/shared-types";
 
 export const items = {
-  async list(): Promise<ItemsResponse> {
+  async list(): Promise<Item[]> {
     return apiFetch("/api/items");
   },
-  async get(id: ItemId): Promise<ItemResponse> {
-    return apiFetch(`/api/items/${id}`);
-  },
-  async create(item: Omit<Item, "id" | "created_at">): Promise<ItemResponse> {
+  // Note: get() is left as-is unless backend is updated to return raw Item
+  async create(item: Omit<Item, "id" | "created_at">): Promise<Item> {
     return apiFetch("/api/items", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

@@ -40,7 +40,7 @@ const Login: React.FC = () => {
         return;
       }
       const data = await res.json();
-      login(data.user);
+      login(data);
       navigate("/");
     } catch (err) {
       setError("Network error");

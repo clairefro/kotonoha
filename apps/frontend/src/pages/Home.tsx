@@ -14,7 +14,7 @@ const Home: React.FC = () => {
     setLoading(true);
     sdk.items
       .list()
-      .then((data) => setItems(data.items))
+      .then((items) => setItems(items))
       .finally(() => setLoading(false));
   }, []);
 
@@ -35,7 +35,7 @@ const Home: React.FC = () => {
     setShowModal(false);
     sdk.items
       .list()
-      .then((data) => setItems(data.items))
+      .then((items) => setItems(items))
       .finally(() => setLoading(false));
   };
 

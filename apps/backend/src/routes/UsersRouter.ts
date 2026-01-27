@@ -1,5 +1,9 @@
+/// <reference path="../../../../types/express-session.d.ts" />
+
+import { Response } from "express";
 import { BaseRouter } from "./_BaseRouter";
 import { createId, hashPassword } from "../utils/db-utils";
+import { UsersEmptyResponse, User } from "shared-types";
 
 export class UsersRouter extends BaseRouter {
   constructor(private db: any) {
@@ -8,35 +12,46 @@ export class UsersRouter extends BaseRouter {
 
   protected defineRoutes() {
     // Get all users (no passwords)
-    this.router.get("/", async (req, res) => {
+    this.router.get("/", async (req, res: Response<User[]>, next) => {
       try {
         const result = await this.db.execute(
           "SELECT id, username, is_admin, created_at FROM users",
         );
-        res.json(result.rows);
-      } catch (err: any) {
-        res.status(500).json({ error: err.message });
+
+        const users = (result.rows as any[]).map((row) => ({
+          id: row.id,
+          username: row.username,
+          is_admin: row.is_admin,
+          created_at: row.created_at,
+        }));
+
+        res.json(users);
+      } catch (err) {
+        next(err);
       }
     });
 
     // Check if users table is empty
-    this.router.get("/empty", async (req, res) => {
-      try {
-        const result = await this.db.execute(
-          "SELECT COUNT(*) as count FROM users",
-        );
-        const isEmpty = Number(result.rows[0]?.count) === 0;
-        res.json({ empty: isEmpty });
-      } catch (err: any) {
-        res.status(500).json({ error: err.message });
-      }
-    });
+    this.router.get(
+      "/empty",
+      async (req, res: Response<UsersEmptyResponse>, next) => {
+        try {
+          const result = await this.db.execute(
+            "SELECT COUNT(*) as count FROM users",
+          );
+          const isEmpty = Number(result.rows[0]?.count) === 0;
+          res.json({ empty: isEmpty });
+        } catch (err) {
+          next(err);
+        }
+      },
+    );
 
     // Create a new user (admin only, except first user)
-    this.router.post("/", async (req, res) => {
+    this.router.post("/", async (req, res: Response<User>, next) => {
       const { username, password } = req.body;
       if (!username || !password) {
-        return res.status(400).json({ error: "Missing username or password" });
+        return next({ status: 400, message: "Missing username or password" });
       }
       const id = createId.user();
       try {
@@ -55,8 +70,9 @@ export class UsersRouter extends BaseRouter {
           );
           userCount = Number(doubleCheck.rows[0]?.count || 0);
           if (userCount !== 0) {
-            return res.status(409).json({
-              error:
+            return next({
+              status: 409,
+              message:
                 "Too late! An admin already exists. Only admins can create new users",
             });
           }
@@ -64,12 +80,11 @@ export class UsersRouter extends BaseRouter {
           // Only admins can create users
           const sessionUser = req.session?.user;
           if (!sessionUser) {
-            return res
-              .status(403)
-              .json({
-                error:
-                  "Only admins can create users. If you are seeing this in the admin onboarding, it means someone else already created an admin",
-              });
+            return next({
+              status: 403,
+              message:
+                "Only admins can create users. If you are seeing this in the admin onboarding, it means someone else already created an admin",
+            });
           }
           // Fetch user from DB to check is_admin
           const adminCheck = await this.db.execute(
@@ -77,9 +92,10 @@ export class UsersRouter extends BaseRouter {
             [sessionUser.id],
           );
           if (!adminCheck.rows[0]?.is_admin) {
-            return res
-              .status(403)
-              .json({ error: "Only admins can create users" });
+            return next({
+              status: 403,
+              message: "Only admins can create users",
+            });
           }
         }
         const password_hash = await hashPassword(password);
@@ -87,24 +103,31 @@ export class UsersRouter extends BaseRouter {
           `INSERT INTO users (id, username, password_hash, is_admin) VALUES (?, ?, ?, ?)`,
           [id, username, password_hash, is_admin],
         );
-        res.status(201).json({ id, username, is_admin });
-      } catch (err: any) {
-        res.status(500).json({ error: err.message });
+        const user = { id, username };
+        res.status(201).json(user);
+      } catch (err) {
+        next(err);
       }
     });
 
     // Get a single user (no password)
-    this.router.get("/:id", async (req, res) => {
+    this.router.get("/:id", async (req, res: Response<User>, next) => {
       try {
         const result = await this.db.execute(
           "SELECT id, username, is_admin, created_at FROM users WHERE id = ?",
           [req.params.id],
         );
-        const user = result.rows[0];
-        if (!user) return res.status(404).json({ error: "User not found" });
+        const row = result.rows[0];
+        if (!row) return next({ status: 404, message: "User not found" });
+        const user: User = {
+          id: row.id,
+          username: row.username,
+          is_admin: row.is_admin,
+          created_at: row.created_at,
+        };
         res.json(user);
-      } catch (err: any) {
-        res.status(500).json({ error: err.message });
+      } catch (err) {
+        next(err);
       }
     });
   }
