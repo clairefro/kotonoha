@@ -9,6 +9,8 @@ import { Item } from "shared-types";
 import {
   CreateItemRequest,
   CreateItemRequestSchema,
+  UpdateItemRequest,
+  UpdateItemRequestSchema,
 } from "shared-types/validation/items";
 import { validateBody } from "../middleware/validation";
 
@@ -66,43 +68,71 @@ export class ItemsRoute extends BaseRouter {
       },
     );
 
-    // Update an item
-    this.router.put("/:id", async (req, res: Response<Item>, next) => {
-      const { id } = req.params;
-      const updates = req.body;
-      try {
-        // Only allow updating certain fields
-        const allowed = ["title", "source_url", "item_type"];
-        const setClauses = Object.keys(updates)
-          .filter((key) => allowed.includes(key))
-          .map((key) => `${key} = ?`);
-        const values = Object.keys(updates)
-          .filter((key) => allowed.includes(key))
-          .map((key) => updates[key]);
-        if (setClauses.length === 0) {
-          return next({ status: 400, message: "No valid fields to update" });
+    this.router.patch(
+      ":id",
+      validateBody(UpdateItemRequestSchema),
+      async (
+        req: Request<{ id: string }, {}, UpdateItemRequest>,
+        res: Response<Item>,
+        next: NextFunction,
+      ) => {
+        const { id } = req.params;
+        if (!id || typeof id !== "string" || !id.trim()) {
+          return next({
+            status: 400,
+            message: "Missing or invalid id parameter",
+          });
         }
-        const sql = `UPDATE items SET ${setClauses.join(", ")} WHERE id = ? RETURNING *`;
-        const result = await this.db.execute(sql, [...values, id]);
-        const row = result.rows[0];
-        if (!row) return next({ status: 404, message: "Item not found" });
-        const item: Item = {
-          id: row.id,
-          title: row.title,
-          source_url: row.source_url,
-          item_type: row.item_type,
-          added_by: row.added_by,
-          created_at: row.created_at,
-        };
-        res.json(item);
-      } catch (err) {
-        next(err);
-      }
-    });
+        const updates = req.body;
+        try {
+          const allowed: (keyof UpdateItemRequest)[] = [
+            "title",
+            "source_url",
+            "item_type",
+          ];
+          const setClauses = (
+            Object.keys(updates) as (keyof UpdateItemRequest)[]
+          )
+            .filter(
+              (key) => allowed.includes(key) && updates[key] !== undefined,
+            )
+            .map((key) => `${key} = ?`);
+          const values = (Object.keys(updates) as (keyof UpdateItemRequest)[])
+            .filter(
+              (key) => allowed.includes(key) && updates[key] !== undefined,
+            )
+            .map((key) => updates[key]);
+          if (setClauses.length === 0) {
+            return next({ status: 400, message: "No valid fields to update" });
+          }
+          const sql = `UPDATE items SET ${setClauses.join(", ")} WHERE id = ? RETURNING *`;
+          const result = await this.db.execute(sql, [...values, id]);
+          const row = result.rows[0];
+          if (!row) return next({ status: 404, message: "Item not found" });
+          const item: Item = {
+            id: row.id,
+            title: row.title,
+            source_url: row.source_url,
+            item_type: row.item_type,
+            added_by: row.added_by,
+            created_at: row.created_at,
+          };
+          res.json(item);
+        } catch (err) {
+          next(err);
+        }
+      },
+    );
 
     // Delete an item
     this.router.delete("/:id", async (req, res, next) => {
       const { id } = req.params;
+      if (!id || typeof id !== "string" || !id.trim()) {
+        return next({
+          status: 400,
+          message: "Missing or invalid id parameter",
+        });
+      }
       const sessionUser = req.session?.user;
       if (!sessionUser) {
         return next({ status: 403, message: "Not authenticated" });

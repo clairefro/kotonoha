@@ -1,4 +1,5 @@
-import { useState, useEffect, FormEvent } from "react";
+import { useState, useEffect } from "react";
+import AddItemForm from "../components/forms/AddItemForm";
 import { sdk } from "../api/sdk";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -6,8 +7,7 @@ const Home: React.FC = () => {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [newTitle, setNewTitle] = useState("");
-  const [newSourceUrl, setNewSourceUrl] = useState("");
+  // Removed local form state, handled by AddItemForm
   const { user } = useAuth();
 
   useEffect(() => {
@@ -18,20 +18,18 @@ const Home: React.FC = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleAddItem = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!newTitle.trim()) return;
-    setLoading(true);
-
+  const handleAddItem = async (data: {
+    title: string;
+    source_url?: string;
+  }) => {
     if (!user) return;
+    setLoading(true);
     await sdk.items.create({
-      title: newTitle,
-      source_url: newSourceUrl,
+      title: data.title,
+      source_url: data.source_url,
       item_type: "article",
       added_by: user.id,
     });
-    setNewTitle("");
-    setNewSourceUrl("");
     setShowModal(false);
     sdk.items
       .list()
@@ -62,37 +60,12 @@ const Home: React.FC = () => {
         <div className="modal-backdrop" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h2>Add New Item</h2>
-            <form onSubmit={handleAddItem}>
-              <div style={{ marginBottom: 12 }}>
-                <label>
-                  Title:
-                  <br />
-                  <input
-                    value={newTitle}
-                    onChange={(e) => setNewTitle(e.target.value)}
-                    required
-                    style={{ width: "100%" }}
-                  />
-                </label>
-              </div>
-              <div style={{ marginBottom: 12 }}>
-                <label>
-                  Source URL:
-                  <br />
-                  <input
-                    value={newSourceUrl}
-                    onChange={(e) => setNewSourceUrl(e.target.value)}
-                    style={{ width: "100%" }}
-                  />
-                </label>
-              </div>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button type="submit">Add</button>
-                <button type="button" onClick={() => setShowModal(false)}>
-                  Cancel
-                </button>
-              </div>
-            </form>
+            <AddItemForm
+              onSubmit={handleAddItem}
+              loading={loading}
+              onCancel={() => setShowModal(false)}
+              addedBy={user?.id}
+            />
           </div>
         </div>
       )}
