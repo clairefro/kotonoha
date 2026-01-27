@@ -33,10 +33,10 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="login-container">
+    <div className="form-container">
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
-        <div className="login-field">
+        <div className="form-field">
           <label>
             Username:
             <br />
@@ -44,12 +44,12 @@ const Login: React.FC = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="login-input"
+              className="form-input"
               autoComplete="username"
             />
           </label>
         </div>
-        <div className="login-field">
+        <div className="form-field">
           <label>
             Password:
             <br />
@@ -58,13 +58,13 @@ const Login: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="login-input"
+              className="form-input"
               autoComplete="current-password"
             />
           </label>
         </div>
-        {error && <div className="login-error">{error}</div>}
-        <button type="submit" className="login-button">
+        {error && <div className="form-error">{error}</div>}
+        <button type="submit" className="form-button">
           Login
         </button>
       </form>

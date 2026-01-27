@@ -11,7 +11,7 @@ const OnboardAdmin: React.FC = () => {
   }, [navigate]);
 
   return (
-    <div className="onboard-admin-container">
+    <div className="form-container">
       <h2>Welcome! Set up your first admin account</h2>
       <div className="onboard-admin-note">
         <span>Important:</span> This account will be the only admin to start
@@ -79,7 +79,7 @@ function SignupForm() {
 
   return (
     <form onSubmit={handleSubmit} className="onboard-admin-form">
-      <div className="onboard-admin-field">
+      <div className="form-field">
         <label>
           Username:
           <br />
@@ -87,13 +87,13 @@ function SignupForm() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
-            className="onboard-admin-input"
+            className="form-input"
             autoFocus
             autoComplete="username"
           />
         </label>
       </div>
-      <div className="onboard-admin-field">
+      <div className="form-field">
         <label>
           Password:
           <br />
@@ -102,12 +102,12 @@ function SignupForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="onboard-admin-input"
+            className="form-input"
             autoComplete="new-password"
           />
         </label>
       </div>
-      <div className="onboard-admin-field">
+      <div className="form-field">
         <label>
           Confirm Password:
           <br />
@@ -116,18 +116,18 @@ function SignupForm() {
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             required
-            className="onboard-admin-input"
+            className="form-input"
             autoComplete="new-password"
           />
         </label>
       </div>
-      {error && <div className="onboard-admin-error">{error}</div>}
+      {error && <div className="form-error">{error}</div>}
       {success && (
-        <div className="onboard-admin-success">
+        <div className="form-success">
           Admin account created! You can now log in.
         </div>
       )}
-      <button type="submit" disabled={loading} className="onboard-admin-button">
+      <button type="submit" disabled={loading} className="form-button">
         {loading ? "Creating..." : "Create Admin Account"}
       </button>
     </form>
