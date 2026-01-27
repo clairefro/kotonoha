@@ -56,9 +56,9 @@ const Profile: React.FC = () => {
         <div>
           <strong>User ID:</strong> {fullUser.id}
         </div>
-        {fullUser.is_admin && (
+        {fullUser.is_admin === true && (
           <div>
-            <strong>Role:</strong> Admin
+            <strong>Is Admin:</strong> Yes
           </div>
         )}
         {fullUser.created_at && (

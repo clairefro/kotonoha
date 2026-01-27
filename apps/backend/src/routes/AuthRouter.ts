@@ -30,10 +30,12 @@ export class AuthRoute extends BaseRouter {
         try {
           // Fetch user by username
           const result = await this.db.execute(
-            "SELECT id, username, password_hash FROM users WHERE username = ?",
+            "SELECT id, username, password_hash, is_admin FROM users WHERE username = ?",
             [username],
           );
-          const user = result.rows[0] as UserRaw | undefined;
+          const user = result.rows[0] as
+            | (UserRaw & { is_admin: boolean })
+            | undefined;
           if (!user) {
             return next({ status: 401, message: "Invalid credentials" });
           }
@@ -46,7 +48,7 @@ export class AuthRoute extends BaseRouter {
           const sessionUser: SessionUser = {
             id: user.id,
             username: user.username,
-            is_admin: user.is_admin,
+            is_admin: !!user.is_admin,
           };
           req.session.user = sessionUser;
           res.json(sessionUser);
@@ -57,17 +59,26 @@ export class AuthRoute extends BaseRouter {
     );
 
     // GET /api/auth/session
-    this.router.get("/session", (req, res: Response<SessionUser>, next) => {
-      try {
-        if (req.session.user) {
-          res.json(req.session.user);
-        } else {
-          next({ status: 401, message: "Not authenticated" });
+    this.router.get(
+      "/session",
+      async (req, res: Response<SessionUser>, next) => {
+        try {
+          if (req.session.user) {
+            // Always fetch is_admin from DB to ensure it's up to date
+            const dbRes = await this.db.execute(
+              "SELECT is_admin FROM users WHERE id = ?",
+              [req.session.user.id],
+            );
+            const is_admin = !!dbRes.rows[0]?.is_admin;
+            res.json({ ...req.session.user, is_admin });
+          } else {
+            next({ status: 401, message: "Not authenticated" });
+          }
+        } catch (err) {
+          next(err);
         }
-      } catch (err) {
-        next(err);
-      }
-    });
+      },
+    );
 
     // POST /api/auth/logout
     this.router.post("/logout", (req, res: Response<OkResponse>, next) => {

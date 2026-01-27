@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import Layout from "./Layout";
 import Home from "./pages/Home";
+import Room from "./pages/Room";
 import Login from "./pages/Login";
 import OnboardAdmin from "./pages/OnboardAdmin";
 import Profile from "./pages/Profile";
@@ -66,6 +67,14 @@ const AppRoutes = () => (
         element={
           <RequireAuth>
             <Profile />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="room"
+        element={
+          <RequireAuth>
+            <Room />
           </RequireAuth>
         }
       />
