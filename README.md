@@ -1,8 +1,6 @@
-# App Description
-
+# Kotonoha
 Shared library platform designed for a small group of users to collaboratively collect, annotate, and comment on books, poems and articles. Users can add new items to the library, share notes and comments, and organize resources
 
-# Kotonoha
 
 ## Getting Started
 
