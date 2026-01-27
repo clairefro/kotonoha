@@ -1,9 +1,14 @@
 /// <reference path="../../../../types/express-session.d.ts" />
 
-import { Response } from "express";
+import { NextFunction, Response, Request } from "express";
 import { BaseRouter } from "./_BaseRouter";
 import { createId, hashPassword } from "../utils/db-utils";
 import { UsersEmptyResponse, User } from "shared-types";
+import {
+  UserCreateRequest,
+  UserCreateRequestSchema,
+} from "shared-types/validation/users";
+import { validateBody } from "../middleware/validation";
 
 export class UsersRouter extends BaseRouter {
   constructor(private db: any) {
@@ -48,67 +53,72 @@ export class UsersRouter extends BaseRouter {
     );
 
     // Create a new user (admin only, except first user)
-    this.router.post("/", async (req, res: Response<User>, next) => {
-      const { username, password } = req.body;
-      if (!username || !password) {
-        return next({ status: 400, message: "Missing username or password" });
-      }
-      const id = createId.user();
-      try {
-        // Check user count
-        const countResult = await this.db.execute(
-          "SELECT COUNT(*) as count FROM users",
-        );
-        let userCount = Number(countResult.rows[0]?.count) || 0;
-        let is_admin = 0;
-        if (userCount === 0) {
-          // First user: always admin
-          is_admin = 1;
-          // Double-check right before insert to avoid race condition
-          const doubleCheck = await this.db.execute(
+    this.router.post(
+      "/",
+      validateBody(UserCreateRequestSchema),
+      async (
+        req: Request<{}, {}, UserCreateRequest>,
+        res: Response<User>,
+        next: NextFunction,
+      ) => {
+        const { username, password } = req.body;
+        const id = createId.user();
+        try {
+          // Check user count
+          const countResult = await this.db.execute(
             "SELECT COUNT(*) as count FROM users",
           );
-          userCount = Number(doubleCheck.rows[0]?.count || 0);
-          if (userCount !== 0) {
-            return next({
-              status: 409,
-              message:
-                "Too late! An admin already exists. Only admins can create new users",
-            });
+          let userCount = Number(countResult.rows[0]?.count) || 0;
+          let is_admin = 0;
+          if (userCount === 0) {
+            // First user: always admin
+            is_admin = 1;
+            // Double-check right before insert to avoid race condition
+            const doubleCheck = await this.db.execute(
+              "SELECT COUNT(*) as count FROM users",
+            );
+            userCount = Number(doubleCheck.rows[0]?.count || 0);
+            if (userCount !== 0) {
+              return next({
+                status: 409,
+                message:
+                  "Too late! An admin already exists. Only admins can create new users",
+              });
+            }
+          } else {
+            // Only admins can create users
+            const sessionUser = req.session?.user;
+            if (!sessionUser) {
+              return next({
+                status: 403,
+                message:
+                  "Only admins can create users. If you are seeing this in the admin onboarding, it means someone else already created an admin",
+              });
+            }
+            // Fetch user from DB to check is_admin
+            const adminCheck = await this.db.execute(
+              "SELECT is_admin FROM users WHERE id = ?",
+              [sessionUser.id],
+            );
+            if (!adminCheck.rows[0]?.is_admin) {
+              return next({
+                status: 403,
+                message: "Only admins can create users",
+              });
+            }
           }
-        } else {
-          // Only admins can create users
-          const sessionUser = req.session?.user;
-          if (!sessionUser) {
-            return next({
-              status: 403,
-              message:
-                "Only admins can create users. If you are seeing this in the admin onboarding, it means someone else already created an admin",
-            });
-          }
-          // Fetch user from DB to check is_admin
-          const adminCheck = await this.db.execute(
-            "SELECT is_admin FROM users WHERE id = ?",
-            [sessionUser.id],
+          const password_hash = await hashPassword(password);
+          await this.db.execute(
+            `INSERT INTO users (id, username, password_hash, is_admin) VALUES (?, ?, ?, ?)`,
+            [id, username, password_hash, is_admin],
           );
-          if (!adminCheck.rows[0]?.is_admin) {
-            return next({
-              status: 403,
-              message: "Only admins can create users",
-            });
-          }
+          const user = { id, username };
+          res.status(201).json(user);
+        } catch (err) {
+          next(err);
         }
-        const password_hash = await hashPassword(password);
-        await this.db.execute(
-          `INSERT INTO users (id, username, password_hash, is_admin) VALUES (?, ?, ?, ?)`,
-          [id, username, password_hash, is_admin],
-        );
-        const user = { id, username };
-        res.status(201).json(user);
-      } catch (err) {
-        next(err);
-      }
-    });
+      },
+    );
 
     // Get a single user (no password)
     this.router.get("/:id", async (req, res: Response<User>, next) => {
