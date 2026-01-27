@@ -1,13 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const Login: React.FC = () => {
-  const { login } = useAuth();
+  const { login, checkUsersEmpty } = useAuth();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [checkingUsers, setCheckingUsers] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    checkUsersEmpty()
+      .then((empty) => {
+        if (mounted && empty) navigate("/onboard-admin", { replace: true });
+      })
+      .finally(() => {
+        if (mounted) setCheckingUsers(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [checkUsersEmpty, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +47,9 @@ const Login: React.FC = () => {
     }
   };
 
+  if (checkingUsers) {
+    return <div className="form-container">Checking setup...</div>;
+  }
   return (
     <div className="form-container">
       <h2>Login</h2>
