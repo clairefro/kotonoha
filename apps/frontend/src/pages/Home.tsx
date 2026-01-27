@@ -46,7 +46,9 @@ const Home: React.FC = () => {
       ) : (
         <ul>
           {items.map((item) => (
-            <li key={item.id}>{item.title}</li>
+            <li key={item.id}>
+              <a href={`/items/${item.id}`}>{item.title}</a>
+            </li>
           ))}
         </ul>
       )}

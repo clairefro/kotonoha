@@ -20,6 +20,35 @@ export class ItemsRoute extends BaseRouter {
   }
 
   protected defineRoutes() {
+    // Get item by id
+    this.router.get("/:id", async (req, res: Response<Item>, next) => {
+      const { id } = req.params;
+      if (!id || typeof id !== "string" || !id.trim()) {
+        return next({
+          status: 400,
+          message: "Missing or invalid id parameter",
+        });
+      }
+      try {
+        const result = await this.db.execute(
+          "SELECT * FROM items WHERE id = ?",
+          [id],
+        );
+        const row = result.rows[0];
+        if (!row) return next({ status: 404, message: "Item not found" });
+        const item: Item = {
+          id: row.id,
+          title: row.title,
+          source_url: row.source_url,
+          item_type: row.item_type,
+          added_by: row.added_by,
+          created_at: row.created_at,
+        };
+        res.json(item);
+      } catch (err) {
+        next(err);
+      }
+    });
     this.router.get("/", async (req, res: Response<Item[]>, next) => {
       try {
         const result = await this.db.execute("SELECT * FROM items");

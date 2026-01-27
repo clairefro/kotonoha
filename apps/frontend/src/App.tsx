@@ -12,6 +12,7 @@ import Room from "./pages/Room";
 import Login from "./pages/Login";
 import OnboardAdmin from "./pages/OnboardAdmin";
 import Profile from "./pages/Profile";
+import ItemDetail from "./pages/ItemDetail";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import "./styles.css";
 
@@ -78,7 +79,14 @@ const AppRoutes = () => (
           </RequireAuth>
         }
       />
-      {/* Add more protected routes here */}
+      <Route
+        path="items/:id"
+        element={
+          <RequireAuth>
+            <ItemDetail />
+          </RequireAuth>
+        }
+      />
     </Route>
   </Routes>
 );

@@ -5,7 +5,9 @@ export const items = {
   async list(): Promise<Item[]> {
     return apiFetch("/api/items");
   },
-  // Note: get() is left as-is unless backend is updated to return raw Item
+  async get(id: ItemId): Promise<Item> {
+    return apiFetch(`/api/items/${id}`);
+  },
   async create(item: Omit<Item, "id" | "created_at">): Promise<Item> {
     return apiFetch("/api/items", {
       method: "POST",
