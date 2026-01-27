@@ -1,11 +1,11 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { checkUsersEmpty } from "../api/users";
+import { sdk } from "../api/sdk";
 
 const OnboardAdmin: React.FC = () => {
   const navigate = useNavigate();
   React.useEffect(() => {
-    checkUsersEmpty().then((empty) => {
+    sdk.users.isEmpty().then((empty) => {
       if (!empty) navigate("/login", { replace: true });
     });
   }, [navigate]);

@@ -1,4 +1,4 @@
-import { checkUsersEmpty } from "../api/users";
+import { sdk } from "../api/sdk";
 import {
   createContext,
   useContext,
@@ -41,7 +41,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, logout, checkUsersEmpty }}
+      value={{
+        user,
+        loading,
+        login,
+        logout,
+        checkUsersEmpty: sdk.users.isEmpty,
+      }}
     >
       {children}
     </AuthContext.Provider>

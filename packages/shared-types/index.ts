@@ -1,5 +1,3 @@
-// Shared TypeScript types for frontend and backend
-
 /** Branded types */
 export type UserId = string & { readonly __brand: "u_" };
 export type ItemId = string & { readonly __brand: "i_" };
@@ -11,6 +9,14 @@ export type ActivityId = string & { readonly __brand: "a_" };
 /**
  * CORE INTERFACES
  */
+
+export interface User {
+  id: UserId;
+  username: string;
+  is_admin?: boolean;
+  created_at?: string;
+}
+
 export interface Item {
   id: ItemId;
   title: string;
