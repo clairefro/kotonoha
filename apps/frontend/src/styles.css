@@ -19,6 +19,18 @@ nav.navbar a {
   color: #222;
 }
 
+.navbar-flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar-user {
+  font-weight: 500;
+  font-size: 15px;
+  color: #444;
+}
+
 main {
   padding: 16px;
 }
