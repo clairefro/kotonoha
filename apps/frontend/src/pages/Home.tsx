@@ -7,7 +7,6 @@ const Home: React.FC = () => {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  // Removed local form state, handled by AddItemForm
   const { user } = useAuth();
 
   useEffect(() => {
@@ -18,16 +17,11 @@ const Home: React.FC = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleAddItem = async (data: {
-    title: string;
-    source_url?: string;
-  }) => {
+  const handleAddItem = async (data: any) => {
     if (!user) return;
     setLoading(true);
     await sdk.items.create({
-      title: data.title,
-      source_url: data.source_url,
-      item_type: "article",
+      ...data,
       added_by: user.id,
     });
     setShowModal(false);
