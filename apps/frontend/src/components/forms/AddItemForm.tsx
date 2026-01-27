@@ -74,6 +74,22 @@ const AddItemForm: React.FC<AddItemFormProps> = ({
           <div style={{ color: "red" }}>{errors.source_url.message}</div>
         )}
       </div>
+      <div style={{ marginBottom: 12 }}>
+        <label>
+          Item Type:
+          <br />
+          <select {...register("item_type")} style={{ width: "100%" }}>
+            <option value="article">Article</option>
+            <option value="book">Book</option>
+            <option value="essay">Essay</option>
+            <option value="poem">Poem</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
+        {errors.item_type && (
+          <div style={{ color: "red" }}>{errors.item_type.message}</div>
+        )}
+      </div>
       <div style={{ display: "flex", gap: 8 }}>
         <button type="submit" disabled={loading}>
           Add
