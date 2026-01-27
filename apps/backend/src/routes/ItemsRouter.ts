@@ -1,5 +1,7 @@
 import { BaseRouter } from "./_BaseRouter";
 import { createId } from "../utils/db-utils";
+import { Response } from "express";
+import { ItemsResponse, ItemResponse } from "shared-types";
 
 export class ItemsRoute extends BaseRouter {
   constructor(private db: any) {
@@ -7,7 +9,7 @@ export class ItemsRoute extends BaseRouter {
   }
 
   protected defineRoutes() {
-    this.router.get("/", async (req, res) => {
+    this.router.get("/", async (req, res: Response<ItemsResponse>, next) => {
       try {
         const result = await this.db.execute("SELECT * FROM items");
         const items = (result.rows as any[]).map((row) => ({
@@ -18,31 +20,30 @@ export class ItemsRoute extends BaseRouter {
           added_by: row.added_by,
           created_at: row.created_at,
         }));
-        res.json(items);
-      } catch (err: any) {
-        res.status(500).json({ error: err.message });
+        res.json({ items });
+      } catch (err) {
+        next(err);
       }
     });
 
-    this.router.post("/", async (req, res) => {
-      const {
-        title,
-        source_url,
-        item_type = "article",
-        added_by = "u_admin_1",
-      } = req.body;
+    this.router.post("/", async (req, res: Response<ItemResponse>, next) => {
+      const { title, source_url, item_type = "article", added_by } = req.body;
       if (!title) {
-        return res.status(400).json({ error: "Missing title" });
+        return next({ status: 400, message: "Missing title" });
+      }
+      if (!added_by) {
+        return next({ status: 400, message: "Missing added_by" });
       }
       const id = createId.item();
       try {
-        await this.db.execute(
-          `INSERT INTO items (id, title, source_url, item_type, added_by) VALUES (?, ?, ?, ?, ?)`,
+        const result = await this.db.execute(
+          `INSERT INTO items (id, title, source_url, item_type, added_by) VALUES (?, ?, ?, ?, ?) RETURNING *`,
           [id, title, source_url || null, item_type, added_by],
         );
-        res.status(201).json({ id, title, source_url, item_type, added_by });
-      } catch (err: any) {
-        res.status(500).json({ error: err.message });
+        const item = result.rows[0];
+        res.status(201).json({ item });
+      } catch (err) {
+        next(err);
       }
     });
   }

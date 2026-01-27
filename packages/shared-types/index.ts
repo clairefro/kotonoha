@@ -27,7 +27,7 @@ export interface Item {
   id: ItemId;
   title: string;
   source_url?: string | null;
-  item_type: "book" | "pdf" | "video" | "article";
+  item_type: "book" | "pdf" | "article";
   added_by: UserId;
   created_at: string;
 }
@@ -40,6 +40,28 @@ export interface Tag {
   color: string;
 }
 
+/**
+ * RESPONSE TYPES
+ */
+export interface OkResponse {
+  ok: boolean;
+}
+
+export interface ErrorResponse {
+  error: string;
+}
+
+export interface SessionUserResponse {
+  user: SessionUser;
+}
+
+export interface ItemsResponse {
+  items: Item[];
+}
+
+export interface ItemResponse {
+  item: Item;
+}
 /**
  * ACTIVITY & NOTIFICATIONS
  */

@@ -1,4 +1,6 @@
 import { useState, useEffect, FormEvent } from "react";
+import { sdk } from "../api/sdk";
+import { useAuth } from "../contexts/AuthContext";
 
 const Home: React.FC = () => {
   const [items, setItems] = useState<any[]>([]);
@@ -6,12 +8,13 @@ const Home: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newSourceUrl, setNewSourceUrl] = useState("");
+  const { user } = useAuth();
 
   useEffect(() => {
     setLoading(true);
-    fetch("/api/items")
-      .then((res) => res.json())
-      .then((data) => setItems(data))
+    sdk.items
+      .list()
+      .then((data) => setItems(data.items))
       .finally(() => setLoading(false));
   }, []);
 
@@ -19,23 +22,20 @@ const Home: React.FC = () => {
     e.preventDefault();
     if (!newTitle.trim()) return;
     setLoading(true);
-    await fetch("/api/items", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: crypto.randomUUID(),
-        title: newTitle,
-        source_url: newSourceUrl,
-        item_type: "article",
-        added_by: "u_admin_1",
-      }),
+
+    if (!user) return;
+    await sdk.items.create({
+      title: newTitle,
+      source_url: newSourceUrl,
+      item_type: "article",
+      added_by: user.id,
     });
     setNewTitle("");
     setNewSourceUrl("");
     setShowModal(false);
-    fetch("/api/items")
-      .then((res) => res.json())
-      .then((data) => setItems(data))
+    sdk.items
+      .list()
+      .then((data) => setItems(data.items))
       .finally(() => setLoading(false));
   };
 

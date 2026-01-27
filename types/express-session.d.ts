@@ -1,7 +1,8 @@
 import "express-session";
+import { UserId } from "shared-types";
 
 declare module "express-session" {
   interface SessionData {
-    user?: { id: string; username: string };
+    user?: { id: UserId; username: string };
   }
 }

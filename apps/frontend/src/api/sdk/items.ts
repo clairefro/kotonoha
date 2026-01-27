@@ -1,14 +1,19 @@
 import { apiFetch } from "../api";
-import type { Item, ItemId } from "../../../../../packages/shared-types";
+import type {
+  Item,
+  ItemId,
+  ItemResponse,
+  ItemsResponse,
+} from "../../../../../packages/shared-types";
 
 export const items = {
-  async list(): Promise<Item[]> {
+  async list(): Promise<ItemsResponse> {
     return apiFetch("/api/items");
   },
-  async get(id: ItemId): Promise<Item> {
+  async get(id: ItemId): Promise<ItemResponse> {
     return apiFetch(`/api/items/${id}`);
   },
-  async create(item: Omit<Item, "id" | "created_at">): Promise<Item> {
+  async create(item: Omit<Item, "id" | "created_at">): Promise<ItemResponse> {
     return apiFetch("/api/items", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

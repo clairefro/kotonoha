@@ -6,6 +6,7 @@ import { createClient } from "@libsql/client";
 import { LOCAL_DEV_DB_PATH, LOCAL_PROD_DB_PATH } from "../constants";
 import { readTextFile } from "./util";
 import createApiRouter from "./routes";
+import { errorHandler } from "./middleware/errorHandler";
 
 // Determine environment
 const isDev = process.env.NODE_ENV !== "production";
@@ -37,6 +38,9 @@ app.use(getSessionMiddleware());
 
 // Register API routes
 app.use("/api", createApiRouter(db));
+
+// Standard error-handling middleware (returns { error: string })
+app.use(errorHandler);
 
 // Start the server
 app.listen(port, () => {
