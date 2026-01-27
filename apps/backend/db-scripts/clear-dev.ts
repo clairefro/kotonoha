@@ -4,7 +4,7 @@ const db = createClient({
   url: `file:./dev-db.sqlite`,
 });
 
-async function clear() {
+export async function clear(_db: any) {
   // Specify head order for deletion
   const headOrder = [
     "activity_receipts",
@@ -17,7 +17,7 @@ async function clear() {
     "users",
   ];
   // Get all user tables
-  const result = await db.execute(
+  const result = await _db.execute(
     "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';",
   );
   const allTables = (result.rows as any[]).map((row) => row.name);
@@ -28,10 +28,12 @@ async function clear() {
   ];
   for (const table of tableOrder) {
     console.log(`Deleting from table '${table}'...`);
-    await db.execute(`DELETE FROM ${table}`);
+    await _db.execute(`DELETE FROM ${table}`);
   }
   console.log("All data cleared from dev DB tables:", tableOrder.join(", "));
-  process.exit(0);
 }
 
-clear();
+// Allow running independently
+if (require.main === module) {
+  clear(db).then(() => process.exit(0));
+}

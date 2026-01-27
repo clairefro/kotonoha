@@ -1,24 +1,23 @@
 import { createClient } from "@libsql/client";
 import { LOCAL_DEV_DB_PATH } from "../constants";
+import { hashPassword } from "../src/utils/db-utils";
+import { clear } from "./clear-dev";
 
 const db = createClient({
   url: `file:${LOCAL_DEV_DB_PATH}`,
 });
 
 async function seed() {
-  // Clean up tables
-  await db.execute("DELETE FROM items");
-  await db.execute("DELETE FROM users");
+  // Clean up tables using clear-dev function
+  await clear(db);
 
   // Seed admin user
+  const adminPassword = "password";
+  const adminHash = await hashPassword(adminPassword);
+
   await db.execute(
     `INSERT INTO users (id, username, password_hash, is_admin) VALUES (?, ?, ?, ?)`,
-    [
-      "u_admin_1",
-      "admin",
-      "$2b$10$examplehashstringforadmin", // Replace with a real hash in production
-      1,
-    ],
+    ["u_admin_1", "admin", adminHash, 1],
   );
 
   // Seed 3 items

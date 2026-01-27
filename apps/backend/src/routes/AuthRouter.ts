@@ -1,5 +1,6 @@
 /// <reference path="../../../../types/express-session.d.ts" />
 
+import { verifyPassword } from "../utils/db-utils";
 import { BaseRoute } from "./_BaseRouter";
 
 export class AuthRoute extends BaseRoute {
@@ -16,17 +17,22 @@ export class AuthRoute extends BaseRoute {
         return res.status(400).json({ error: "Missing username or password" });
       }
       try {
-        // TODO: implement password hashing. for now, calling password_hash directly
+        // Fetch user by username
         const result = await this.db.execute(
-          "SELECT id, username FROM users WHERE username = ? AND password_hash = ?",
-          [username, password],
+          "SELECT id, username, password_hash FROM users WHERE username = ?",
+          [username],
         );
         const user = result.rows[0];
         if (!user) {
           return res.status(401).json({ error: "Invalid credentials" });
         }
-        req.session.user = user;
-        res.json({ user });
+        // Compare password with hash
+        const match = await verifyPassword(password, user.password_hash);
+        if (!match) {
+          return res.status(401).json({ error: "Invalid credentials" });
+        }
+        req.session.user = { id: user.id, username: user.username };
+        res.json({ user: { id: user.id, username: user.username } });
       } catch (err) {
         res.status(500).json({ error: "Server error" });
       }

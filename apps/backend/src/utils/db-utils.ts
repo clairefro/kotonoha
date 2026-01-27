@@ -1,3 +1,5 @@
+import bcrypt from "bcrypt";
+
 import { createClient } from "@libsql/client";
 import { nanoid } from "nanoid";
 
@@ -78,4 +80,17 @@ export const createId = {
   topic: () => `t_${newNanoId()}` as TagId,
   comment: () => `c_${newNanoId()}` as CommentId,
   activity: () => `a_${newNanoId()}` as ActivityId,
+};
+
+/** HASHING UTILS */
+
+export const hashPassword = async (password: string): Promise<string> => {
+  return bcrypt.hash(password, 10); // 10 salt rounds
+};
+
+export const verifyPassword = async (
+  password: string,
+  hash: string,
+): Promise<boolean> => {
+  return bcrypt.compare(password, hash);
 };
