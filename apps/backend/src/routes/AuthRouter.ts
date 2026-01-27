@@ -42,6 +42,7 @@ export class AuthRoute extends BaseRouter {
           const sessionUser: SessionUser = {
             id: user.id,
             username: user.username,
+            is_admin: user.is_admin,
           };
           req.session.user = sessionUser;
           res.json(sessionUser);

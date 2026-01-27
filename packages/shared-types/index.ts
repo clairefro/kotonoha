@@ -14,6 +14,7 @@ export type ActivityId = string & { readonly __brand: "a_" };
 export interface SessionUser {
   id: UserId;
   username: string;
+  is_admin?: boolean;
 }
 
 export interface User {
