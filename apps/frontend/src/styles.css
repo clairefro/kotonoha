@@ -1,3 +1,29 @@
+/* Login form styles */
+.login-container {
+  max-width: 320px;
+  margin: 40px auto;
+  background: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+}
+
+.login-field {
+  margin-bottom: 12px;
+}
+
+.login-input {
+  width: 100%;
+}
+
+.login-error {
+  color: #b00;
+  margin-bottom: 12px;
+}
+
+.login-button {
+  width: 100%;
+}
 body {
   font-family: system-ui, sans-serif;
   background: #f7f8fa;

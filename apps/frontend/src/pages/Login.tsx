@@ -33,19 +33,10 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div
-      style={{
-        maxWidth: 320,
-        margin: "40px auto",
-        background: "#fff",
-        padding: 24,
-        borderRadius: 8,
-        boxShadow: "0 2px 16px rgba(0,0,0,0.08)",
-      }}
-    >
+    <div className="login-container">
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: 12 }}>
+        <div className="login-field">
           <label>
             Username:
             <br />
@@ -53,12 +44,12 @@ const Login: React.FC = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              style={{ width: "100%" }}
+              className="login-input"
               autoComplete="username"
             />
           </label>
         </div>
-        <div style={{ marginBottom: 12 }}>
+        <div className="login-field">
           <label>
             Password:
             <br />
@@ -67,15 +58,13 @@ const Login: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              style={{ width: "100%" }}
+              className="login-input"
               autoComplete="current-password"
             />
           </label>
         </div>
-        {error && (
-          <div style={{ color: "#b00", marginBottom: 12 }}>{error}</div>
-        )}
-        <button type="submit" style={{ width: "100%" }}>
+        {error && <div className="login-error">{error}</div>}
+        <button type="submit" className="login-button">
           Login
         </button>
       </form>
