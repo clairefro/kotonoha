@@ -9,15 +9,27 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // For demo: accept any username, password must be 'password'
-    if (password !== "password") {
-      setError("Invalid password (hint: 'password')");
-      return;
+    setError("");
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ username, password }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Login failed");
+        return;
+      }
+      const data = await res.json();
+      login(data.user);
+      navigate("/");
+    } catch (err) {
+      setError("Network error");
     }
-    login({ id: "u_demo", username });
-    navigate("/");
   };
 
   return (

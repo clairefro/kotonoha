@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
 export type User = {
   id: string;
@@ -15,6 +21,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  useEffect(() => {
+    fetch("/api/auth/session", { credentials: "include" })
+      .then(async (res) => {
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const login = (user: User) => setUser(user);
   const logout = () => setUser(null);

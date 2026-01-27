@@ -1,4 +1,4 @@
-import { BaseRoute } from "./_BaseRoute";
+import { BaseRoute } from "./_BaseRouter";
 import { createId } from "../utils/db-utils";
 
 export class ItemsRoute extends BaseRoute {

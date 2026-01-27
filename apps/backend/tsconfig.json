@@ -12,6 +12,10 @@
       "shared-types": ["../../packages/shared-types"]
     }
   },
-  "include": ["src", "../../packages/shared-types"],
+  "include": [
+    "src",
+    "../../packages/shared-types",
+    "../../types/express-session.d.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }

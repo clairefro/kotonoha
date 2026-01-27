@@ -23,7 +23,11 @@
     "db:dev:clear": "npm --workspace apps/backend run db:dev:clear"
   },
   "dependencies": {
+    "express-session": "^1.19.0",
     "nanoid": "^5.1.6",
     "react-router-dom": "^7.13.0"
+  },
+  "devDependencies": {
+    "@types/express-session": "^1.18.2"
   }
 }

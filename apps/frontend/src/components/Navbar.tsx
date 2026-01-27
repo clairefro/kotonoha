@@ -3,15 +3,32 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 const Navbar: React.FC = () => {
-  const { user } = useAuth();
-  console.log({ user });
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+    logout();
+  };
+
   return (
     <nav className="navbar navbar-flex">
       <div>
         <Link to="/">Home</Link>
         {/* Add more nav links here */}
       </div>
-      <div className="navbar-user">{user ? user.username : null}</div>
+      <div className="navbar-user">
+        {user ? (
+          <>
+            {user.username}
+            <button onClick={handleLogout} style={{ marginLeft: 12 }}>
+              Logout
+            </button>
+          </>
+        ) : null}
+      </div>
     </nav>
   );
 };
