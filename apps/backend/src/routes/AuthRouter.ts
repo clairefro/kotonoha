@@ -1,9 +1,11 @@
 /// <reference path="../../../../types/express-session.d.ts" />
 
+import { Response, Request, NextFunction } from "express";
 import { verifyPassword } from "../utils/db-utils";
 import { BaseRouter } from "./_BaseRouter";
 import { User, SessionUser, OkResponse } from "shared-types";
-import { Response } from "express";
+import { LoginRequest, LoginRequestSchema } from "shared-types/validation/auth";
+import { validateBody } from "../middleware/validation";
 
 interface UserRaw extends User {
   password_hash: string;
@@ -18,11 +20,13 @@ export class AuthRoute extends BaseRouter {
     // POST /api/auth/login
     this.router.post(
       "/login",
-      async (req, res: Response<SessionUser>, next) => {
+      validateBody(LoginRequestSchema),
+      async (
+        req: Request<{}, {}, LoginRequest>,
+        res: Response<SessionUser>,
+        next: NextFunction,
+      ) => {
         const { username, password } = req.body;
-        if (!username || !password) {
-          return next({ status: 400, message: "Missing username or password" });
-        }
         try {
           // Fetch user by username
           const result = await this.db.execute(

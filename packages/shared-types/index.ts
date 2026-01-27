@@ -49,7 +49,8 @@ export interface OkResponse {
 }
 
 export interface ErrorResponse {
-  error: string;
+  status: string;
+  message?: string;
 }
 
 export interface UsersEmptyResponse {
