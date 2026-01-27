@@ -17,6 +17,11 @@ const Navbar: React.FC = () => {
     <nav className="navbar navbar-flex">
       <div>
         <Link to="/">Home</Link>
+        {user && (
+          <Link to="/profile" style={{ marginLeft: 16 }}>
+            Profile
+          </Link>
+        )}
         {/* Add more nav links here */}
       </div>
       <div className="navbar-user">

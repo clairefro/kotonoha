@@ -10,6 +10,7 @@ import Layout from "./Layout";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import OnboardAdmin from "./pages/OnboardAdmin";
+import Profile from "./pages/Profile";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import "./styles.css";
 
@@ -57,6 +58,14 @@ const AppRoutes = () => (
         element={
           <RequireAuth>
             <Home />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="profile"
+        element={
+          <RequireAuth>
+            <Profile />
           </RequireAuth>
         }
       />

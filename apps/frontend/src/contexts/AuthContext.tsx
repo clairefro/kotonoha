@@ -6,11 +6,7 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-
-export type User = {
-  id: string;
-  username: string;
-};
+import { User } from "../../../../packages/shared-types";
 
 interface AuthContextType {
   user: User | null;

@@ -10,6 +10,12 @@ export type ActivityId = string & { readonly __brand: "a_" };
  * CORE INTERFACES
  */
 
+/** minimal user interface for session communication */
+export interface SessionUser {
+  id: UserId;
+  username: string;
+}
+
 export interface User {
   id: UserId;
   username: string;
