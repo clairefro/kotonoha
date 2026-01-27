@@ -13,6 +13,7 @@ export type User = {
 
 interface AuthContextType {
   user: User | null;
+  loading: boolean;
   login: (user: User) => void;
   logout: () => void;
 }
@@ -21,6 +22,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     fetch("/api/auth/session", { credentials: "include" })
       .then(async (res) => {
@@ -29,14 +31,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser(data.user);
         }
       })
-      .catch(() => {});
+      .finally(() => setLoading(false));
   }, []);
 
   const login = (user: User) => setUser(user);
   const logout = () => setUser(null);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

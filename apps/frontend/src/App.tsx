@@ -13,8 +13,15 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import "./styles.css";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const location = useLocation();
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center", marginTop: 40 }}>
+        Checking session...
+      </div>
+    );
+  }
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }

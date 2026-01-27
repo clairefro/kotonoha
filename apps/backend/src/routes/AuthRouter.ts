@@ -11,7 +11,6 @@ export class AuthRoute extends BaseRoute {
   protected defineRoutes() {
     // POST /api/auth/login
     this.router.post("/login", async (req, res) => {
-      console.log("login req", req.body);
       const { username, password } = req.body;
       if (!username || !password) {
         return res.status(400).json({ error: "Missing username or password" });
