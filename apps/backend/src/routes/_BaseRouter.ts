@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-export abstract class BaseRoute {
+export abstract class BaseRouter {
   public readonly name: string;
   public readonly router: Router;
 

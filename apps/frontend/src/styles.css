@@ -55,3 +55,45 @@ main {
   min-width: 320px;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.15);
 }
+
+/* OnboardAdmin styles */
+.onboard-admin-container {
+  max-width: 400px;
+  margin: 40px auto;
+  padding: 24px;
+  background: #fff;
+  border-radius: 8px;
+}
+
+.onboard-admin-note {
+  margin-bottom: 16px;
+  color: #b00;
+  font-weight: 500;
+}
+
+.onboard-admin-form {
+  margin-top: 12px;
+}
+
+.onboard-admin-field {
+  margin-bottom: 12px;
+}
+
+.onboard-admin-input {
+  width: 100%;
+}
+
+.onboard-admin-error {
+  color: #b00;
+  margin-bottom: 10px;
+}
+
+.onboard-admin-success {
+  color: green;
+  margin-bottom: 10px;
+}
+
+.onboard-admin-button {
+  width: 100%;
+  padding: 8px;
+}

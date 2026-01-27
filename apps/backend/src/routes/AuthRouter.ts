@@ -1,9 +1,9 @@
 /// <reference path="../../../../types/express-session.d.ts" />
 
 import { verifyPassword } from "../utils/db-utils";
-import { BaseRoute } from "./_BaseRouter";
+import { BaseRouter } from "./_BaseRouter";
 
-export class AuthRoute extends BaseRoute {
+export class AuthRoute extends BaseRouter {
   constructor(private db: any) {
     super("auth");
   }

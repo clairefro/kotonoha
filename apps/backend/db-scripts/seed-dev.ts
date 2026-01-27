@@ -12,12 +12,14 @@ async function seed() {
   await clear(db);
 
   // Seed admin user
+  const adminUsername = "admin";
+  const adminId = "u_admin_1";
   const adminPassword = "password";
   const adminHash = await hashPassword(adminPassword);
 
   await db.execute(
     `INSERT INTO users (id, username, password_hash, is_admin) VALUES (?, ?, ?, ?)`,
-    ["u_admin_1", "admin", adminHash, 1],
+    [adminId, adminUsername, adminHash, 1],
   );
 
   // Seed 3 items

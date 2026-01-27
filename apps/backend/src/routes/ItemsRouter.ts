@@ -1,7 +1,7 @@
-import { BaseRoute } from "./_BaseRouter";
+import { BaseRouter } from "./_BaseRouter";
 import { createId } from "../utils/db-utils";
 
-export class ItemsRoute extends BaseRoute {
+export class ItemsRoute extends BaseRouter {
   constructor(private db: any) {
     super("items");
   }

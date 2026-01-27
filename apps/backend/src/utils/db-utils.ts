@@ -3,7 +3,14 @@ import bcrypt from "bcrypt";
 import { createClient } from "@libsql/client";
 import { nanoid } from "nanoid";
 
-import { ItemId, HumanId, TagId, CommentId, ActivityId } from "shared-types";
+import {
+  ItemId,
+  HumanId,
+  TagId,
+  CommentId,
+  ActivityId,
+  UserId,
+} from "shared-types";
 
 /** SCHEMA ENFORCEMENT */
 export async function ensureDbSchema(
@@ -75,6 +82,7 @@ const newNanoId = () => {
 };
 
 export const createId = {
+  user: () => `u_${newNanoId()}` as UserId,
   item: () => `i_${newNanoId()}` as ItemId,
   human: () => `h_${newNanoId()}` as HumanId,
   topic: () => `t_${newNanoId()}` as TagId,

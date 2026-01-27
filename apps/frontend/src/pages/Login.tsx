@@ -54,6 +54,7 @@ const Login: React.FC = () => {
               onChange={(e) => setUsername(e.target.value)}
               required
               style={{ width: "100%" }}
+              autoComplete="username"
             />
           </label>
         </div>
@@ -67,6 +68,7 @@ const Login: React.FC = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               style={{ width: "100%" }}
+              autoComplete="current-password"
             />
           </label>
         </div>

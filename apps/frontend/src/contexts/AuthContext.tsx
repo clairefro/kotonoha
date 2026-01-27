@@ -1,4 +1,5 @@
-import React, {
+import { checkUsersEmpty } from "../api/users";
+import {
   createContext,
   useContext,
   useState,
@@ -16,6 +17,7 @@ interface AuthContextType {
   loading: boolean;
   login: (user: User) => void;
   logout: () => void;
+  checkUsersEmpty: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,7 +40,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => setUser(null);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, logout, checkUsersEmpty }}
+    >
       {children}
     </AuthContext.Provider>
   );

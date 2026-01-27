@@ -9,18 +9,37 @@ import {
 import Layout from "./Layout";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import OnboardAdmin from "./pages/OnboardAdmin";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import "./styles.css";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, checkUsersEmpty } = useAuth();
   const location = useLocation();
-  if (loading) {
+  const [usersEmpty, setUsersEmpty] = React.useState<boolean | null>(null);
+  const [checkingUsers, setCheckingUsers] = React.useState(true);
+
+  React.useEffect(() => {
+    let mounted = true;
+    checkUsersEmpty()
+      .then((empty) => {
+        if (mounted) setUsersEmpty(empty);
+      })
+      .finally(() => {
+        if (mounted) setCheckingUsers(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [checkUsersEmpty]);
+
+  if (checkingUsers || loading) {
     return (
-      <div style={{ textAlign: "center", marginTop: 40 }}>
-        Checking session...
-      </div>
+      <div style={{ textAlign: "center", marginTop: 40 }}>Launching...</div>
     );
+  }
+  if (usersEmpty) {
+    return <Navigate to="/onboard-admin" replace />;
   }
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
@@ -31,6 +50,7 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 const AppRoutes = () => (
   <Routes>
     <Route path="/login" element={<Login />} />
+    <Route path="/onboard-admin" element={<OnboardAdmin />} />
     <Route path="/" element={<Layout />}>
       <Route
         index
