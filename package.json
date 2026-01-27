@@ -23,9 +23,11 @@
     "db:dev:clear": "npm --workspace apps/backend run db:dev:clear"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
     "bcrypt": "^6.0.0",
     "express-session": "^1.19.0",
     "nanoid": "^5.1.6",
+    "react-hook-form": "^7.71.1",
     "react-router-dom": "^7.13.0",
     "zod": "^4.3.6"
   },
