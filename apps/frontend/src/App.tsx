@@ -14,6 +14,7 @@ import OnboardAdmin from "./pages/OnboardAdmin";
 import Profile from "./pages/Profile";
 import ItemDetail from "./pages/ItemDetail";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { UsersProvider } from "./contexts/UsersContext";
 import "./styles.css";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -93,9 +94,11 @@ const AppRoutes = () => (
 
 const App: React.FC = () => (
   <AuthProvider>
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+    <UsersProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </UsersProvider>
   </AuthProvider>
 );
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useUsers } from "../contexts/UsersContext";
 import AddItemForm from "../components/forms/AddItemForm";
 import { sdk } from "../api/sdk";
 import { useAuth } from "../contexts/AuthContext";
@@ -9,12 +10,14 @@ const Home: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const { user } = useAuth();
 
+  const { refreshUsers } = useUsers();
   useEffect(() => {
     setLoading(true);
     sdk.items
       .list()
       .then((items) => setItems(items))
       .finally(() => setLoading(false));
+    refreshUsers();
   }, []);
 
   const handleAddItem = async (data: any) => {
