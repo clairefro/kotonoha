@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import { useUsers } from "../contexts/UsersContext";
 import AddItemForm from "../components/forms/AddItemForm";
 import { sdk } from "../api/sdk";
+import Bookshelf from "../components/Bookshelf";
 import { useAuth } from "../contexts/AuthContext";
 
 const Home: React.FC = () => {
   const [items, setItems] = useState<any[]>([]);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const { user } = useAuth();
@@ -36,7 +39,7 @@ const Home: React.FC = () => {
 
   return (
     <div>
-      <h1>Items</h1>
+      <h1>Welcome</h1>
       <button
         style={{ fontSize: 24, padding: "4px 12px", marginBottom: 16 }}
         onClick={() => setShowModal(true)}
@@ -47,13 +50,12 @@ const Home: React.FC = () => {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <ul>
-          {items.map((item) => (
-            <li key={item.id}>
-              <a href={`/items/${item.id}`}>{item.title}</a>
-            </li>
-          ))}
-        </ul>
+        <Bookshelf
+          items={items}
+          page={page}
+          pageSize={pageSize}
+          onPageChange={setPage}
+        />
       )}
       {showModal && (
         <div className="modal-backdrop" onClick={() => setShowModal(false)}>
