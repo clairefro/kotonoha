@@ -13,7 +13,7 @@ import { validateBody } from "../middleware/validation";
 
 export class UsersRouter extends BaseRouter {
   private userService: UserService;
-  constructor(private db: any) {
+  constructor(db: any) {
     super("users");
     this.userService = new UserService(db);
   }

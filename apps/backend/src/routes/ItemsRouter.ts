@@ -18,7 +18,7 @@ import { IdParamSchema } from "shared-types/validation/general";
 
 export class ItemsRoute extends BaseRouter {
   private itemService: ItemService;
-  constructor(private db: any) {
+  constructor(db: any) {
     super("items");
     this.itemService = new ItemService(db);
   }
