@@ -1,14 +1,16 @@
 import { apiFetch } from "../api";
-import type { Item, ItemId } from "../../../../../packages/shared-types";
+import type { Item, ItemId, TagOrAuthor, ItemWithMeta } from "shared-types";
 
 export const items = {
-  async list(): Promise<Item[]> {
+  async list(): Promise<ItemWithMeta[]> {
     return apiFetch("/api/items");
   },
-  async get(id: ItemId): Promise<Item> {
+  async get(id: ItemId): Promise<ItemWithMeta> {
     return apiFetch(`/api/items/${id}`);
   },
-  async create(item: Omit<Item, "id" | "created_at">): Promise<Item> {
+  async create(
+    item: Omit<ItemWithMeta, "id" | "created_at">,
+  ): Promise<ItemWithMeta> {
     return apiFetch("/api/items", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -17,8 +19,8 @@ export const items = {
   },
   async update(
     id: ItemId,
-    updates: Partial<Omit<Item, "id" | "created_at" | "added_by">>,
-  ): Promise<Item> {
+    updates: Partial<Omit<ItemWithMeta, "id" | "created_at" | "added_by">>,
+  ): Promise<ItemWithMeta> {
     return apiFetch(`/api/items/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },

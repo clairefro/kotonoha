@@ -4,8 +4,7 @@ import { BaseRouter } from "./_BaseRouter";
 import { createId } from "../utils/db-utils";
 import { Response, Request, NextFunction } from "express";
 
-import { Item } from "shared-types";
-
+import { Item, TagOrAuthor } from "shared-types";
 import {
   CreateItemRequest,
   CreateItemRequestSchema,
@@ -29,12 +28,7 @@ export class ItemsRoute extends BaseRouter {
       validateParams(IdParamSchema),
       async (req: Request, res: Response<Item>, next: NextFunction) => {
         const { id } = req.params;
-        if (!id || typeof id !== "string" || !id.trim()) {
-          return next({
-            status: 400,
-            message: "Missing or invalid id parameter",
-          });
-        }
+
         try {
           const result = await this.db.execute(
             "SELECT * FROM items WHERE id = ?",
@@ -62,7 +56,9 @@ export class ItemsRoute extends BaseRouter {
       requireAuth,
       async (_req: Request, res: Response<Item[]>, next: NextFunction) => {
         try {
-          const result = await this.db.execute("SELECT * FROM items");
+          const result = await this.db.execute(
+            "SELECT * FROM items ORDER BY created_at DESC",
+          );
           const items = (result.rows as any[]).map((row) => ({
             id: row.id,
             title: row.title,
@@ -84,16 +80,76 @@ export class ItemsRoute extends BaseRouter {
       validateBody(CreateItemRequestSchema),
       async (
         req: Request<{}, {}, CreateItemRequest>,
-        res: Response<Item>,
+        res: Response,
         next: NextFunction,
       ) => {
-        const { title, source_url, item_type, added_by } = req.body;
+        const {
+          title,
+          source_url,
+          item_type,
+          added_by,
+          tags = [],
+          authors = [],
+        } = req.body;
         const id = createId.item();
+        const db = this.db;
+
         try {
-          const result = await this.db.execute(
+          // Insert item
+          const result = await db.execute(
             `INSERT INTO items (id, title, source_url, item_type, added_by) VALUES (?, ?, ?, ?, ?) RETURNING *`,
             [id, title, source_url || null, item_type, added_by],
           );
+          // Helper to upsert tag/author and return id
+          async function upsertTagOrAuthor(obj: TagOrAuthor) {
+            if (obj.id) return obj.id;
+            // Prefix: h_ for author, t_ for tag
+            const prefix = obj.type === "author" ? "h_" : "t_";
+            // Check if tag exists by name and type
+            const existing = await db.execute(
+              `SELECT id FROM tags WHERE name = ? AND id LIKE ? LIMIT 1`,
+              [obj.name, `${prefix}%`],
+            );
+            if (existing.rows.length > 0) return existing.rows[0].id;
+            // Create new tag
+            const newId = prefix + require("nanoid").nanoid(14);
+            await db.execute(`INSERT INTO tags (id, name) VALUES (?, ?)`, [
+              newId,
+              obj.name,
+            ]);
+            return newId;
+          }
+
+          // Upsert all tags and authors, collect ids
+          const tagIds = [];
+          for (const tag of tags) {
+            const tagId = await upsertTagOrAuthor({ ...tag, type: "tag" });
+            tagIds.push(tagId);
+          }
+          const authorIds = [];
+          for (const author of authors) {
+            const authorId = await upsertTagOrAuthor({
+              ...author,
+              type: "author",
+            });
+            authorIds.push(authorId);
+          }
+
+          // Insert into entity_tags (for tags)
+          for (const tagId of tagIds) {
+            await db.execute(
+              `INSERT OR IGNORE INTO entity_tags (entity_id, tag_id) VALUES (?, ?)`,
+              [id, tagId],
+            );
+          }
+          // Insert into item_authors (for authors)
+          for (const authorId of authorIds) {
+            await db.execute(
+              `INSERT OR IGNORE INTO item_authors (item_id, author_id) VALUES (?, ?)`,
+              [id, authorId],
+            );
+          }
+
           const row = result.rows[0];
           const item: Item = {
             id: row.id,

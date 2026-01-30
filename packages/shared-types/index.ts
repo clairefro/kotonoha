@@ -41,6 +41,8 @@ export interface Tag {
   color: string;
 }
 
+export type TagOrAuthor = { id?: string; name: string; type: "tag" | "author" };
+
 /**
  * RESPONSE TYPES
  */
@@ -84,9 +86,9 @@ export interface ActivityReceipt {
 }
 
 /**
- * HYDRATED RESPONSE TYPE
+ * HYDRATED RESPONSE TYPES
  */
-export interface ItemWithMetadata extends Item {
-  authors: Tag[]; // h_ tags via item_authors
-  tags: Tag[]; // t_ or h_ tags via entity_tags
+export interface ItemWithMeta extends Item {
+  tags?: Tag[];
+  authors?: Tag[];
 }

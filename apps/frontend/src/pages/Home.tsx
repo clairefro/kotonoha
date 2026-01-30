@@ -8,7 +8,7 @@ import { useAuth } from "../contexts/AuthContext";
 const Home: React.FC = () => {
   const [items, setItems] = useState<any[]>([]);
   const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const pageSize = 20;
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const { user } = useAuth();
