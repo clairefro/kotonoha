@@ -69,10 +69,10 @@ export class UsersRouter extends BaseRouter {
           // Check user count
           const users = await this.userService.getAllUsers();
           let userCount = users.length;
-          let is_admin = 0;
+          let is_admin = false;
           if (userCount === 0) {
             // First user: always admin
-            is_admin = 1;
+            is_admin = true;
             // Double-check right before insert to avoid race condition
             const doubleCheck = await this.userService.getAllUsers();
             userCount = doubleCheck.length;
@@ -104,14 +104,12 @@ export class UsersRouter extends BaseRouter {
               });
             }
           }
-          if (is_admin) {
-            await this.userService.createUserAdmin({ username, password });
-          } else {
-            await this.userService.createUser({
-              username,
-              password, // pass plaintext password, service will hash
-            });
-          }
+
+          await this.userService.createUser({
+            username,
+            password,
+            is_admin,
+          });
 
           const user = { id, username };
           res.status(201).json(user);

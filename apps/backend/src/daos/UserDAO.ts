@@ -52,9 +52,11 @@ export class UserDAO {
     password_hash: string;
     is_admin?: boolean;
   }): Promise<UserPublic> {
+    // Convert is_admin to 0/1 for SQLite
+    const is_admin = user.is_admin ? 1 : 0;
     const result = await this.db.execute(
       `INSERT INTO users (id, username, password_hash, is_admin) VALUES (?, ?, ?, ?) RETURNING *`,
-      [user.id, user.username, user.password_hash, user.is_admin ?? false],
+      [user.id, user.username, user.password_hash, is_admin],
     );
     return stripPasswordHash(result.rows[0]);
   }
@@ -76,8 +78,14 @@ export class UserDAO {
     const values: any[] = [];
     for (const key of allowed) {
       if (updates[key] !== undefined) {
-        setClauses.push(`${key} = ?`);
-        values.push(updates[key]);
+        if (key === "is_admin") {
+          // Convert boolean to 0/1 for SQLite
+          setClauses.push(`${key} = ?`);
+          values.push(updates[key] ? 1 : 0);
+        } else {
+          setClauses.push(`${key} = ?`);
+          values.push(updates[key]);
+        }
       }
     }
     if (setClauses.length === 0) return null;

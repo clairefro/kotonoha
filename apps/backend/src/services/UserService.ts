@@ -34,8 +34,9 @@ export class UserService {
     return this.userDAO.getAll();
   }
 
-  async createUser(user: UserLoginCredentials) {
+  async createUser(user: UserLoginCredentials & { is_admin?: boolean }) {
     const id = createId.user();
+    const is_admin = !!user.is_admin;
     const password_hash = await hashPassword(user.password);
     // Remove plaintext password before passing to DAO
     const { password, ...rest } = user;
@@ -43,19 +44,7 @@ export class UserService {
       ...rest,
       id,
       password_hash,
-      is_admin: true,
-    });
-  }
-
-  async createUserAdmin(user: UserLoginCredentials) {
-    const id = createId.user();
-    const password_hash = await hashPassword(user.password);
-    // Remove plaintext password before passing to DAO
-    const { password, ...rest } = user;
-    return this.userDAO.insert({
-      ...rest,
-      id,
-      password_hash,
+      is_admin,
     });
   }
 
