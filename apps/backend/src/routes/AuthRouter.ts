@@ -31,21 +31,21 @@ export class AuthRoute extends BaseRouter {
       ) => {
         const { username, password } = req.body;
         try {
-          // Fetch user by username (assume username is email for compatibility)
-          const user = await this.userService.getUserByEmail(username);
+          // Fetch user by username
+          const user = await this.userService.getUserByUsername(username);
           if (!user) {
             return next({ status: 401, message: "Invalid credentials" });
           }
           // Compare password with hash
-          const match = await verifyPassword(password, user.password);
+          const match = await verifyPassword(password, user.password_hash);
           if (!match) {
             return next({ status: 401, message: "Invalid credentials" });
           }
           // Explicitly construct SessionUser to ensure password is not present
           const sessionUser: SessionUser = {
             id: user.id,
-            username: user.email || user.name || username,
-            is_admin: user.role === "admin" || !!user.is_admin,
+            username: user.username,
+            is_admin: !!user.is_admin,
           };
           req.session.user = sessionUser;
           res.json(sessionUser);

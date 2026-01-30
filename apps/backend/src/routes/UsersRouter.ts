@@ -100,7 +100,7 @@ export class UsersRouter extends BaseRouter {
           const password_hash = await hashPassword(password);
           await this.userService.createUser({
             id,
-            email: username, // assuming username is email for compatibility
+            username,
             name: username,
             password: password_hash,
             role: is_admin ? "admin" : "user",

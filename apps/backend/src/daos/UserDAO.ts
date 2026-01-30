@@ -10,10 +10,10 @@ export class UserDAO {
     return result.rows[0] || null;
   }
 
-  async getByEmail(email: string) {
+  async getByUsername(username: string) {
     const result = await this.db.execute(
-      "SELECT * FROM users WHERE email = ?",
-      [email],
+      "SELECT * FROM users WHERE username = ?",
+      [username],
     );
     return result.rows[0] || null;
   }
@@ -25,14 +25,14 @@ export class UserDAO {
 
   async insert(user: {
     id: string;
-    email: string;
+    username: string;
     name: string;
     password: string;
     role: string;
   }) {
     const result = await this.db.execute(
-      `INSERT INTO users (id, email, name, password, role) VALUES (?, ?, ?, ?, ?) RETURNING *`,
-      [user.id, user.email, user.name, user.password, user.role],
+      `INSERT INTO users (id, username, name, password, role) VALUES (?, ?, ?, ?, ?) RETURNING *`,
+      [user.id, user.username, user.name, user.password, user.role],
     );
     return result.rows[0];
   }
@@ -40,14 +40,14 @@ export class UserDAO {
   async update(
     id: string,
     updates: Partial<{
-      email: string;
+      username: string;
       name: string;
       password: string;
       role: string;
     }>,
   ) {
     const allowed: (keyof typeof updates)[] = [
-      "email",
+      "username",
       "name",
       "password",
       "role",

@@ -11,8 +11,8 @@ export class UserService {
     return this.userDAO.getById(id);
   }
 
-  async getUserByEmail(email: string) {
-    return this.userDAO.getByEmail(email);
+  async getUserByUsername(username: string) {
+    return this.userDAO.getByUsername(username);
   }
 
   async getAllUsers() {
@@ -21,7 +21,7 @@ export class UserService {
 
   async createUser(user: {
     id: string;
-    email: string;
+    username: string;
     name: string;
     password: string;
     role: string;
@@ -32,7 +32,7 @@ export class UserService {
   async updateUser(
     id: string,
     updates: Partial<{
-      email: string;
+      username: string;
       name: string;
       password: string;
       role: string;
