@@ -4,6 +4,7 @@ import { NextFunction, Response, Request } from "express";
 import { BaseRouter } from "./_BaseRouter";
 import { createId, hashPassword } from "../utils/db-utils";
 import { UsersEmptyResponse, User } from "shared-types";
+import { UserService } from "../services/UserService";
 import {
   UserCreateRequest,
   UserCreateRequestSchema,
@@ -11,26 +12,22 @@ import {
 import { validateBody } from "../middleware/validation";
 
 export class UsersRouter extends BaseRouter {
+  private userService: UserService;
   constructor(private db: any) {
     super("users");
+    this.userService = new UserService(db);
   }
 
   protected defineRoutes() {
     // Get all users (no passwords)
     this.router.get("/", async (req, res: Response<User[]>, next) => {
       try {
-        const result = await this.db.execute(
-          "SELECT id, username, is_admin, created_at FROM users",
+        const users = await this.userService.getAllUsers();
+        // Remove password fields if present
+        const safeUsers = users.map(
+          ({ password, password_hash, ...u }: any) => u,
         );
-
-        const users = (result.rows as any[]).map((row) => ({
-          id: row.id,
-          username: row.username,
-          is_admin: row.is_admin,
-          created_at: row.created_at,
-        }));
-
-        res.json(users);
+        res.json(safeUsers);
       } catch (err) {
         next(err);
       }
@@ -41,10 +38,8 @@ export class UsersRouter extends BaseRouter {
       "/empty",
       async (req, res: Response<UsersEmptyResponse>, next) => {
         try {
-          const result = await this.db.execute(
-            "SELECT COUNT(*) as count FROM users",
-          );
-          const isEmpty = Number(result.rows[0]?.count) === 0;
+          const users = await this.userService.getAllUsers();
+          const isEmpty = users.length === 0;
           res.json({ empty: isEmpty });
         } catch (err) {
           next(err);
@@ -65,19 +60,15 @@ export class UsersRouter extends BaseRouter {
         const id = createId.user();
         try {
           // Check user count
-          const countResult = await this.db.execute(
-            "SELECT COUNT(*) as count FROM users",
-          );
-          let userCount = Number(countResult.rows[0]?.count) || 0;
+          const users = await this.userService.getAllUsers();
+          let userCount = users.length;
           let is_admin = 0;
           if (userCount === 0) {
             // First user: always admin
             is_admin = 1;
             // Double-check right before insert to avoid race condition
-            const doubleCheck = await this.db.execute(
-              "SELECT COUNT(*) as count FROM users",
-            );
-            userCount = Number(doubleCheck.rows[0]?.count || 0);
+            const doubleCheck = await this.userService.getAllUsers();
+            userCount = doubleCheck.length;
             if (userCount !== 0) {
               return next({
                 status: 409,
@@ -96,11 +87,10 @@ export class UsersRouter extends BaseRouter {
               });
             }
             // Fetch user from DB to check is_admin
-            const adminCheck = await this.db.execute(
-              "SELECT is_admin FROM users WHERE id = ?",
-              [sessionUser.id],
+            const adminUser = await this.userService.getUserById(
+              sessionUser.id,
             );
-            if (!adminCheck.rows[0]?.is_admin) {
+            if (!adminUser?.is_admin) {
               return next({
                 status: 403,
                 message: "Only admins can create users",
@@ -108,10 +98,13 @@ export class UsersRouter extends BaseRouter {
             }
           }
           const password_hash = await hashPassword(password);
-          await this.db.execute(
-            `INSERT INTO users (id, username, password_hash, is_admin) VALUES (?, ?, ?, ?)`,
-            [id, username, password_hash, is_admin],
-          );
+          await this.userService.createUser({
+            id,
+            email: username, // assuming username is email for compatibility
+            name: username,
+            password: password_hash,
+            role: is_admin ? "admin" : "user",
+          });
           const user = { id, username };
           res.status(201).json(user);
         } catch (err) {
@@ -123,19 +116,11 @@ export class UsersRouter extends BaseRouter {
     // Get a single user (no password)
     this.router.get("/:id", async (req, res: Response<User>, next) => {
       try {
-        const result = await this.db.execute(
-          "SELECT id, username, is_admin, created_at FROM users WHERE id = ?",
-          [req.params.id],
-        );
-        const row = result.rows[0];
-        if (!row) return next({ status: 404, message: "User not found" });
-        const user: User = {
-          id: row.id,
-          username: row.username,
-          is_admin: row.is_admin,
-          created_at: row.created_at,
-        };
-        res.json(user);
+        const user = await this.userService.getUserById(req.params.id);
+        if (!user) return next({ status: 404, message: "User not found" });
+        // Remove password fields if present
+        const { password, password_hash, ...safeUser } = user;
+        res.json(safeUser);
       } catch (err) {
         next(err);
       }
