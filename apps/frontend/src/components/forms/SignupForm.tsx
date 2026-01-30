@@ -1,4 +1,5 @@
 import { useAuth } from "../../contexts/AuthContext";
+import { users } from "../../api/sdk/users";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -43,25 +44,25 @@ const SignupForm = () => {
     setSuccess(false);
     setLoading(true);
     try {
-      const res = await fetch("/api/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      let resp;
+      try {
+        resp = await users.create({
           username: data.username,
           password: data.password,
-        }),
-        credentials: "include",
-      });
-      if (!res.ok) {
-        const resp = await res.json().catch(() => ({}));
+        });
+      } catch (err: any) {
         setServerError(
-          resp.error || resp.message || "Failed to create admin user",
+          err?.error || err?.message || "Failed to create admin user",
         );
         setLoading(false);
         return;
       }
-      const resp = await res.json();
-      login({ id: resp.id, username: resp.username });
+      login({
+        id: resp.id,
+        username: resp.username,
+        is_admin: resp.is_admin ?? false,
+        created_at: resp.created_at ?? new Date().toISOString(),
+      });
       setSuccess(true);
       reset();
     } catch (err) {

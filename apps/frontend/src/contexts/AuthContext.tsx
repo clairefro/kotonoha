@@ -6,12 +6,12 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import { User } from "../../../../packages/shared-types";
+import { UserPublic } from "../../../../packages/shared-types";
 
 interface AuthContextType {
-  user: User | null;
+  user: UserPublic | null;
   loading: boolean;
-  login: (user: User) => void;
+  login: (user: UserPublic) => void;
   logout: () => void;
   checkUsersEmpty: () => Promise<boolean>;
 }
@@ -19,7 +19,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserPublic | null>(null);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     fetch("/api/auth/session", { credentials: "include" })
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = (user: User) => setUser(user);
+  const login = (user: UserPublic) => setUser(user);
   const logout = () => setUser(null);
 
   return (

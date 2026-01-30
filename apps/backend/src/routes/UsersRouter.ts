@@ -3,7 +3,7 @@
 import { NextFunction, Response, Request } from "express";
 import { BaseRouter } from "./_BaseRouter";
 import { createId, hashPassword } from "../utils/db-utils";
-import { UsersEmptyResponse, User } from "shared-types";
+import { UsersEmptyResponse, UserPublic } from "shared-types";
 import { UserService } from "../services/UserService";
 import {
   UserCreateRequest,
@@ -20,18 +20,25 @@ export class UsersRouter extends BaseRouter {
 
   protected defineRoutes() {
     // Get all users (no passwords)
-    this.router.get("/", async (req, res: Response<User[]>, next) => {
-      try {
-        const users = await this.userService.getAllUsers();
-        // Remove password fields if present
-        const safeUsers = users.map(
-          ({ password, password_hash, ...u }: any) => u,
-        );
-        res.json(safeUsers);
-      } catch (err) {
-        next(err);
-      }
-    });
+    this.router.get(
+      "/",
+      async (
+        req,
+        res: Response<Omit<UserPublic, "is_admin" | "created_at">[]>,
+        next,
+      ) => {
+        try {
+          const users = await this.userService.getAllUsers();
+          // Remove password fields if present
+          const safeUsers = users.map(
+            ({ password, password_hash, ...u }: any) => u,
+          );
+          res.json(safeUsers);
+        } catch (err) {
+          next(err);
+        }
+      },
+    );
 
     // Check if users table is empty
     this.router.get(
@@ -53,7 +60,7 @@ export class UsersRouter extends BaseRouter {
       validateBody(UserCreateRequestSchema),
       async (
         req: Request<{}, {}, UserCreateRequest>,
-        res: Response<User>,
+        res: Response<Omit<UserPublic, "is_admin" | "created_at">>,
         next: NextFunction,
       ) => {
         const { username, password } = req.body;
@@ -97,14 +104,15 @@ export class UsersRouter extends BaseRouter {
               });
             }
           }
-          const password_hash = await hashPassword(password);
-          await this.userService.createUser({
-            id,
-            username,
-            name: username,
-            password: password_hash,
-            role: is_admin ? "admin" : "user",
-          });
+          if (is_admin) {
+            await this.userService.createUserAdmin({ username, password });
+          } else {
+            await this.userService.createUser({
+              username,
+              password, // pass plaintext password, service will hash
+            });
+          }
+
           const user = { id, username };
           res.status(201).json(user);
         } catch (err) {
@@ -114,9 +122,9 @@ export class UsersRouter extends BaseRouter {
     );
 
     // Get a single user (no password)
-    this.router.get("/:id", async (req, res: Response<User>, next) => {
+    this.router.get("/:id", async (req, res: Response<UserPublic>, next) => {
       try {
-        const user = await this.userService.getUserById(req.params.id);
+        const user: any = await this.userService.getUserById(req.params.id);
         if (!user) return next({ status: 404, message: "User not found" });
         // Remove password fields if present
         const { password, password_hash, ...safeUser } = user;

@@ -17,11 +17,19 @@ export interface SessionUser {
   is_admin?: boolean;
 }
 
-export interface User {
+export interface UserPublic {
   id: UserId;
   username: string;
-  is_admin?: boolean;
-  created_at?: string;
+  is_admin: boolean;
+  created_at: string;
+}
+export interface UserPrivate extends UserPublic {
+  password_hash: string;
+}
+
+export interface UserLoginCredentials {
+  username: string;
+  password: string;
 }
 
 export interface Item {

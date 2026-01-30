@@ -1,14 +1,20 @@
 import { apiFetch } from "../api";
-import { User } from "../../../../../packages/shared-types";
+import {
+  UserLoginCredentials,
+  UserPublic,
+} from "../../../../../packages/shared-types";
 
 export const users = {
-  async list(): Promise<User[]> {
+  async list(): Promise<UserPublic[]> {
     return apiFetch("/api/users");
   },
-  async get(id: string): Promise<User> {
+  async get(id: string): Promise<UserPublic> {
     return apiFetch(`/api/users/${id}`);
   },
-  async create(username: string, password: string): Promise<User> {
+  async create({
+    username,
+    password,
+  }: UserLoginCredentials): Promise<UserPublic> {
     return apiFetch("/api/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

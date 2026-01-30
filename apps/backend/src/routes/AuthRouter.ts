@@ -1,16 +1,12 @@
 /// <reference path="../../../../types/express-session.d.ts" />
 
 import { Response, Request, NextFunction } from "express";
-import { verifyPassword } from "../utils/db-utils";
+// import { verifyPassword } from "../utils/db-utils";
 import { UserService } from "../services/UserService";
 import { BaseRouter } from "./_BaseRouter";
-import { User, SessionUser, OkResponse } from "shared-types";
+import { UserPublic, UserPrivate, SessionUser, OkResponse } from "shared-types";
 import { LoginRequest, LoginRequestSchema } from "shared-types/validation/auth";
 import { validateBody } from "../middleware/validation";
-
-interface UserRaw extends User {
-  password_hash: string;
-}
 
 export class AuthRoute extends BaseRouter {
   private userService: UserService;
@@ -31,14 +27,12 @@ export class AuthRoute extends BaseRouter {
       ) => {
         const { username, password } = req.body;
         try {
-          // Fetch user by username
-          const user = await this.userService.getUserByUsername(username);
+          // Authenticate user (service handles password check)
+          const user = await this.userService.authenticateUser(
+            username,
+            password,
+          );
           if (!user) {
-            return next({ status: 401, message: "Invalid credentials" });
-          }
-          // Compare password with hash
-          const match = await verifyPassword(password, user.password_hash);
-          if (!match) {
             return next({ status: 401, message: "Invalid credentials" });
           }
           // Explicitly construct SessionUser to ensure password is not present
@@ -65,7 +59,7 @@ export class AuthRoute extends BaseRouter {
             const user = await this.userService.getUserById(
               req.session.user.id,
             );
-            const is_admin = user?.role === "admin" || !!user?.is_admin;
+            const is_admin = !!user?.is_admin;
             res.json({ ...req.session.user, is_admin });
           } else {
             next({ status: 401, message: "Not authenticated" });
