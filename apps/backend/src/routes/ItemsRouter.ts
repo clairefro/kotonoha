@@ -4,7 +4,7 @@ import { BaseRouter } from "./_BaseRouter";
 import { createId } from "../utils/db-utils";
 import { Response, Request, NextFunction } from "express";
 
-import { Item, TagOrAuthor } from "shared-types";
+import { Item } from "shared-types";
 import { ItemService } from "../services/ItemService";
 import {
   CreateItemRequest,
